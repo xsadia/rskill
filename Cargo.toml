@@ -7,6 +7,8 @@ homepage = "https://github.com/xsadia/rskill"
 repository = "https://github.com/xsadia/rskill"
 categories = ["command-line-utilities"]
 authors = ["Felipe Rosa <felipe.rosa.arthur27@gmail.com>"]
+description = "npkill like cli utility for removing node_modules"
+license = "MIT"
 
 [dependencies]
 anyhow = "1.0.95"
