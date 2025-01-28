@@ -1,6 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-**rskill** is clone of [npkill](https://github.com/voidcosmos/npkill), written in Rust for study purposes. It allows you to quickly find and delete `node_modules` directories to free up disk space. While it tries to follow the same CLI API as `npkill`, it does not implement all of it's features. **User discretion is advised** when deleting directories.
+**rskill** is a clone of [npkill](https://github.com/voidcosmos/npkill), written in Rust for study purposes. It allows you to quickly find and delete `node_modules` directories to free up disk space. While it tries to follow the same CLI API as `npkill`, it does not implement all of it's features. **User discretion is advised** when deleting directories.
 
 ---
 
@@ -31,8 +31,8 @@
 
 Download the latest release from [Releases](https://github.com/xsadia/rskill/releases) and add the binary to your system's PATH.
 ```
-wget https://github.com/xsadia/rskill/releases/download/v0.1.0/rskill-linux-x64.tar.gz
-tar -xzf rskill-linux-x64.tar.gz
+wget https://github.com/xsadia/rskill/releases/download/v0.1.0/rskill-linux-x86_64.tar.gz
+tar -xzf rskill-linux-x86_64.tar.gz
 sudo mv rskill /usr/local/bin
 ```
 
