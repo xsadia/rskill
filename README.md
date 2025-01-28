@@ -29,8 +29,13 @@
 
 ## Installation
 
-Download the latest release from [Releases](https://github.com/xsadia/rskill/releases) and add the binary to your system's PATH.
+You can install `rskill` via Cargo:
+```bash
+cargo install rskill
 ```
+
+or download the latest release from [Releases](https://github.com/xsadia/rskill/releases) and add the binary to your system's PATH.
+```bash
 wget https://github.com/xsadia/rskill/releases/download/v0.1.0/rskill-linux-x86_64.tar.gz
 tar -xzf rskill-linux-x86_64.tar.gz
 sudo mv rskill /usr/local/bin
