@@ -1,5 +1,4 @@
 use rayon::prelude::*;
-use regex::Regex;
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -9,20 +8,11 @@ use std::{
 
 use fs_extra::dir::{get_details_entry, DirEntryAttr, DirEntryValue};
 use tokio::sync::Mutex;
-use walkdir::{DirEntry, WalkDir};
+use walkdir::WalkDir;
 
 use crate::cli::{Args, NodeModule};
 
 const READ_BUFFER_SIZE: usize = 64 * 1024; // 64KB buffer
-
-#[inline]
-pub fn skip_hidden(entry: &DirEntry) -> bool {
-    entry
-        .file_name()
-        .to_str()
-        .map(|s| s.starts_with('.'))
-        .unwrap_or(false)
-}
 
 thread_local! {
     static DIR_BUFFER: std::cell::RefCell<Vec<u8>> = std::cell::RefCell::new(Vec::with_capacity(READ_BUFFER_SIZE));
@@ -87,7 +77,7 @@ pub async fn scan_directory(root: PathBuf, args: Args, results: Arc<Mutex<Vec<No
             if is_target {
                 !is_nested_module(e.path(), &target) && !is_excluded
             } else {
-                (!args.exclude_hidden || !skip_hidden(e)) && !is_excluded
+                (!args.exclude_hidden || !is_dangerous(e.path())) && !is_excluded
             }
         })
         .filter_map(Result::ok)
@@ -107,16 +97,19 @@ pub async fn scan_directory(root: PathBuf, args: Args, results: Arc<Mutex<Vec<No
     results.extend(modules);
 }
 
-pub fn is_dangerous(path: PathBuf) -> bool {
-    let hidden_file_pattern = Regex::new(r"(^|/|\\)\.[^/\\.]").unwrap(); // Matches hidden files/dirs
-    let mac_apps_pattern = Regex::new(r"(^|/)Applications/[^/]+\.app(/|$)").unwrap(); // Matches macOS app bundles
-    let windows_app_data_pattern = Regex::new(r"(^|\\)AppData\\").unwrap(); // Matches Windows AppData
+pub fn is_dangerous(path: &Path) -> bool {
+    let path_str = path.to_string_lossy();
 
-    let path = path.to_string_lossy();
+    let is_hidden = path_str
+        .split('/')
+        .chain(path_str.split('\\'))
+        .any(|part| part.starts_with('.') && part != "." && part != "..");
 
-    hidden_file_pattern.is_match(&path)
-        || mac_apps_pattern.is_match(&path)
-        || windows_app_data_pattern.is_match(&path)
+    let is_mac_app = path_str.contains(".app/") || path_str.ends_with(".app");
+
+    let is_windows_app_data = path_str.contains("\\AppData\\");
+
+    is_hidden || is_mac_app || is_windows_app_data
 }
 
 #[cfg(test)]
@@ -128,7 +121,7 @@ mod tests {
     fn test_hidden_file_unix() {
         let path = PathBuf::from("/home/user/.hidden_file");
         assert!(
-            is_dangerous(path),
+            is_dangerous(&path),
             "Hidden file on Unix should be dangerous"
         );
     }
@@ -137,7 +130,7 @@ mod tests {
     fn test_hidden_file_windows() {
         let path = PathBuf::from("C:\\Users\\user\\.hidden_file");
         assert!(
-            is_dangerous(path),
+            is_dangerous(&path),
             "Hidden file on Windows should be dangerous"
         );
     }
@@ -146,7 +139,7 @@ mod tests {
     fn test_hidden_directory_unix() {
         let path = PathBuf::from("/home/user/.hidden_dir/file.txt");
         assert!(
-            is_dangerous(path),
+            is_dangerous(&path),
             "File in hidden directory on Unix should be dangerous"
         );
     }
@@ -155,7 +148,7 @@ mod tests {
     fn test_hidden_directory_windows() {
         let path = PathBuf::from("C:\\Users\\user\\.hidden_dir\\file.txt");
         assert!(
-            is_dangerous(path),
+            is_dangerous(&path),
             "File in hidden directory on Windows should be dangerous"
         );
     }
@@ -163,14 +156,14 @@ mod tests {
     #[test]
     fn test_mac_app_bundle() {
         let path = PathBuf::from("/Applications/MyApp.app/Contents/MacOS/MyApp");
-        assert!(is_dangerous(path), "macOS app bundle should be dangerous");
+        assert!(is_dangerous(&path), "macOS app bundle should be dangerous");
     }
 
     #[test]
     fn test_windows_app_data() {
         let path = PathBuf::from("C:\\Users\\user\\AppData\\Local\\Temp\\file.txt");
         assert!(
-            is_dangerous(path),
+            is_dangerous(&path),
             "Windows AppData path should be dangerous"
         );
     }
@@ -179,7 +172,7 @@ mod tests {
     fn test_safe_path_unix() {
         let path = PathBuf::from("/home/user/Documents/file.txt");
         assert!(
-            !is_dangerous(path),
+            !is_dangerous(&path),
             "Normal Unix path should not be dangerous"
         );
     }
@@ -188,7 +181,7 @@ mod tests {
     fn test_safe_path_windows() {
         let path = PathBuf::from("C:\\Users\\user\\Documents\\file.txt");
         assert!(
-            !is_dangerous(path),
+            !is_dangerous(&path),
             "Normal Windows path should not be dangerous"
         );
     }
@@ -196,20 +189,20 @@ mod tests {
     #[test]
     fn test_root_path() {
         let path = PathBuf::from("/");
-        assert!(!is_dangerous(path), "Root path should not be dangerous");
+        assert!(!is_dangerous(&path), "Root path should not be dangerous");
     }
 
     #[test]
     fn test_empty_path() {
         let path = PathBuf::from("");
-        assert!(!is_dangerous(path), "Empty path should not be dangerous");
+        assert!(!is_dangerous(&path), "Empty path should not be dangerous");
     }
 
     #[test]
     fn test_dot_path() {
         let path = PathBuf::from(".");
         assert!(
-            !is_dangerous(path),
+            !is_dangerous(&path),
             "Current directory path should not be dangerous"
         );
     }
@@ -218,7 +211,7 @@ mod tests {
     fn test_dot_dot_path() {
         let path = PathBuf::from("..");
         assert!(
-            !is_dangerous(path),
+            !is_dangerous(&path),
             "Parent directory path should not be dangerous"
         );
     }

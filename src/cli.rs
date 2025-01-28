@@ -54,7 +54,7 @@ impl NodeModule {
             size,
             modified,
             deleted: false,
-            is_dangerous: is_dangerous(path),
+            is_dangerous: is_dangerous(&path),
         }
     }
 }
