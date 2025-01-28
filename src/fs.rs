@@ -98,7 +98,7 @@ pub async fn scan_directory(root: PathBuf, args: Args, results: Arc<Mutex<Vec<No
 }
 
 pub fn is_dangerous(path: &Path) -> bool {
-    let path_str = path.to_string_lossy();
+    let path_str = path.to_string_lossy().to_lowercase();
 
     let is_hidden = path_str
         .split('/')
@@ -107,9 +107,12 @@ pub fn is_dangerous(path: &Path) -> bool {
 
     let is_mac_app = path_str.contains(".app/") || path_str.ends_with(".app");
 
-    let is_windows_app_data = path_str.contains("\\AppData\\");
+    let is_windows_app_data = path_str.contains("\\appdata\\");
 
-    is_hidden || is_mac_app || is_windows_app_data
+    let is_mac_library = path_str.contains("/library/") || path_str.contains("\\library\\");
+
+    println!("{path_str}, {is_hidden}, {is_mac_app}, {is_windows_app_data}, {is_mac_library}");
+    is_hidden || is_mac_app || is_windows_app_data || is_mac_library
 }
 
 #[cfg(test)]
@@ -214,5 +217,26 @@ mod tests {
             !is_dangerous(&path),
             "Parent directory path should not be dangerous"
         );
+    }
+
+    #[test]
+    fn test_user_library() {
+        let path = PathBuf::from("/Users/username/Library/Preferences/com.apple.finder.plist");
+        assert!(
+            is_dangerous(&path),
+            "User Library Preferences should be dangerous"
+        );
+    }
+
+    #[test]
+    fn test_system_library() {
+        let path = PathBuf::from("/Library/Application Support/SomeApp");
+        assert!(is_dangerous(&path), "System Library should be dangerous");
+    }
+
+    #[test]
+    fn test_library_caches() {
+        let path = PathBuf::from("/Users/username/Library/Caches/com.apple.Safari");
+        assert!(is_dangerous(&path), "Caches directory should be dangerous");
     }
 }
