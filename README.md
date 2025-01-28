@@ -31,8 +31,8 @@
 
 Download the latest release from [Releases](https://github.com/xsadia/rskill/releases) and add the binary to your system's PATH.
 ```
-wget https://github.com/xsadia/rskill/releases/download/v0.1.0/rskill-linux-x64.tar.gz
-tar -xzf rskill-linux-x64.tar.gz
+wget https://github.com/xsadia/rskill/releases/download/v0.1.0/rskill-linux-x86_64.tar.gz
+tar -xzf rskill-linux-x86_64.tar.gz
 sudo mv rskill /usr/local/bin
 ```
 
