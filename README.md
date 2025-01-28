@@ -1,6 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-**rskill** is clone of [npkill](https://github.com/voidcosmos/npkill), written in Rust for study purposes. It allows you to quickly find and delete `node_modules` directories to free up disk space. While it tries to follow the same CLI API as `npkill`, it does not implement all of it's features. **User discretion is advised** when deleting directories.
+**rskill** is a clone of [npkill](https://github.com/voidcosmos/npkill), written in Rust for study purposes. It allows you to quickly find and delete `node_modules` directories to free up disk space. While it tries to follow the same CLI API as `npkill`, it does not implement all of it's features. **User discretion is advised** when deleting directories.
 
 ---
 
