@@ -1,7 +1,12 @@
 [package]
 name = "rskill"
-version = "0.1.0"
+version = "0.3.0"
 edition = "2021"
+readme = "README.md"
+homepage = "https://github.com/xsadia/rskill"
+repository = "https://github.com/xsadia/rskill"
+categories = ["command-line-utilities"]
+authors = ["Felipe Rosa <felipe.rosa.arthur27@gmail.com>"]
 
 [dependencies]
 anyhow = "1.0.95"
