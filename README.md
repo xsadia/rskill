@@ -24,7 +24,7 @@
 | -s, --sort                       | Sort results by: `size`, `path` or `last-mod`                                                                                                  |
 | -t, --target                     | Specify the name of the directories you want to search (by default, is node_modules)                                                           |
 | -x, --exclude-hidden-directories | Exclude hidden directories ("dot" directories) from search.                                                                                    |
-| -V, --version                    | Show npkill version                                                                                                                            |
+| -V, --version                    | Show rskill version                                                                                                                            |
 
 
 ## Installation
