@@ -10,9 +10,14 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let start = std::time::Instant::now();
     let args = Args::parse();
 
+    if args.delete_all {
+        let confirmed = tui::confirm_delete_all(&args.target)?;
+        if !confirmed {
+            return Ok(());
+        }
+    }
     let results = Arc::new(Mutex::new(Vec::<NodeModule>::with_capacity(1000)));
     let mut handles = Vec::with_capacity(10);
 
@@ -23,6 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let scanning = Arc::new(AtomicBool::new(true));
+    let start = std::time::Instant::now();
     let spinner_handle = {
         let scanning = Arc::clone(&scanning);
         tokio::spawn(tui::display_spinner(scanning))

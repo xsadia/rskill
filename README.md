@@ -17,6 +17,7 @@
 | ARGUMENT                         | DESCRIPTION                                                                                                                                    |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | -d, --directory                  | Set the directory from which to begin searching. By default, starting-point is .                                                               |
+| -D, --delete-all                 | Automatically delete all node_modules folders that are found. Suggested to be used together with `-x`.                                         |
 | -E, --exclude                    | Exclude directories from search (directory list must be inside double quotes "", each directory separated by ',' ) Example: "ignore1, ignore2" |
 | -f, --full                       | Start searching from the home of the user (example: "/home/user" in linux)                                                                     |
 | --gb                              | Show folders in Gigabytes instead of Megabytes.                                                                                                |

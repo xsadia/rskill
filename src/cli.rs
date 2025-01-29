@@ -57,6 +57,13 @@ impl NodeModule {
             is_dangerous: is_dangerous(&path),
         }
     }
+
+    pub fn delete(&mut self) {
+        let path = self.path.clone();
+        self.deleted = true;
+
+        tokio::spawn(tokio::fs::remove_dir_all(path));
+    }
 }
 
 pub struct App {
@@ -81,20 +88,20 @@ impl App {
             KeyCode::Up if self.scroll > 0 => self.scroll -= 1,
             KeyCode::Down if self.scroll < self.modules.len().saturating_sub(1) => self.scroll += 1,
             KeyCode::Char(' ') => {
-                if let Some(module) = self.modules.get_mut(self.scroll) {
-                    if module.deleted {
-                        return;
-                    }
-
-                    let path = module.path.clone();
-                    module.deleted = true;
-
-                    tokio::spawn(tokio::fs::remove_dir_all(path));
-
-                    self.total_deleted += module.size;
-                }
+                self.delete_module();
             }
             _ => {}
+        }
+    }
+
+    pub fn delete_module(&mut self) {
+        if let Some(module) = self.modules.get_mut(self.scroll) {
+            if module.deleted {
+                return;
+            }
+
+            module.delete();
+            self.total_deleted += module.size;
         }
     }
 }
@@ -133,4 +140,8 @@ pub struct Args {
     /// Sort results by: size, path or last-mod
     #[arg(long, short, value_enum)]
     pub sort: Option<SortBy>,
+
+    /// Automatically delete all node_modules folders that are found. Suggested to be used together with -x.
+    #[arg(long = "delete-all", short = 'D')]
+    pub delete_all: bool,
 }

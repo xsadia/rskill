@@ -95,8 +95,12 @@ pub fn run_tui(
             } else {
                 let items: Vec<ListItem> = app
                     .modules
-                    .iter()
+                    .iter_mut()
                     .map(|m| {
+                        if args.delete_all && !m.deleted {
+                            m.delete();
+                            app.total_deleted += m.size;
+                        }
                         let style = if m.deleted {
                             Style::default().fg(Color::Red)
                         } else if m.is_dangerous {
@@ -124,6 +128,7 @@ pub fn run_tui(
                 );
             }
         })?;
+
         if let Event::Key(key) = event::read()? {
             if key.code == KeyCode::Char('q') {
                 break;
@@ -158,4 +163,44 @@ pub async fn display_spinner(scanning: Arc<AtomicBool>) -> std::io::Result<()> {
     disable_raw_mode()?;
     std::io::stdout().execute(LeaveAlternateScreen)?;
     Ok(())
+}
+
+pub fn confirm_delete_all(target: &str) -> Result<bool, Box<dyn std::error::Error>> {
+    enable_raw_mode()?;
+    std::io::stdout().execute(EnterAlternateScreen)?;
+    let mut terminal = Terminal::new(CrosstermBackend::new(std::io::stdout()))?;
+
+    let confirmed = loop {
+        terminal.draw(|f| {
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .margin(2)
+                .constraints([Constraint::Length(3), Constraint::Length(3)])
+                .split(f.area());
+
+            let warning = Paragraph::new(format!(
+                "⚠️  WARNING: You are about to delete ALL {target} directories!"
+            ))
+            .style(Style::default().fg(Color::Yellow))
+            .alignment(Alignment::Center)
+            .block(Block::default().borders(Borders::ALL));
+
+            let prompt = Paragraph::new("Press 'y' to confirm or any other key to cancel")
+                .alignment(Alignment::Center);
+
+            f.render_widget(warning, chunks[0]);
+            f.render_widget(prompt, chunks[1]);
+        })?;
+
+        if let Event::Key(key) = event::read()? {
+            match key.code {
+                KeyCode::Char('y') => break true,
+                _ => break false,
+            }
+        }
+    };
+
+    disable_raw_mode()?;
+    std::io::stdout().execute(LeaveAlternateScreen)?;
+    Ok(confirmed)
 }

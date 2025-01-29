@@ -111,7 +111,6 @@ pub fn is_dangerous(path: &Path) -> bool {
 
     let is_mac_library = path_str.contains("/library/") || path_str.contains("\\library\\");
 
-    println!("{path_str}, {is_hidden}, {is_mac_app}, {is_windows_app_data}, {is_mac_library}");
     is_hidden || is_mac_app || is_windows_app_data || is_mac_library
 }
 
